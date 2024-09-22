@@ -1,0 +1,18 @@
+{
+  "mappings": {
+    "net/pedroricardo/chiseledenchanting/mixin/EnchantmentScreenHandlerMixin": {
+      "Lnet/minecraft/block/EnchantingTableBlock;canAccessPowerProvider(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_2331;method_40445(Lnet/minecraft/class_1937;Lnet/minecraft/class_2338;Lnet/minecraft/class_2338;)Z",
+      "generateEnchantments": "Lnet/minecraft/class_1718;method_7637(Lnet/minecraft/class_5455;Lnet/minecraft/class_1799;II)Ljava/util/List;",
+      "method_17411": "Lnet/minecraft/class_1718;method_17411(Lnet/minecraft/class_1799;Lnet/minecraft/class_1937;Lnet/minecraft/class_2338;)V"
+    }
+  },
+  "data": {
+    "named:intermediary": {
+      "net/pedroricardo/chiseledenchanting/mixin/EnchantmentScreenHandlerMixin": {
+        "Lnet/minecraft/block/EnchantingTableBlock;canAccessPowerProvider(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z": "Lnet/minecraft/class_2331;method_40445(Lnet/minecraft/class_1937;Lnet/minecraft/class_2338;Lnet/minecraft/class_2338;)Z",
+        "generateEnchantments": "Lnet/minecraft/class_1718;method_7637(Lnet/minecraft/class_5455;Lnet/minecraft/class_1799;II)Ljava/util/List;",
+        "method_17411": "Lnet/minecraft/class_1718;method_17411(Lnet/minecraft/class_1799;Lnet/minecraft/class_1937;Lnet/minecraft/class_2338;)V"
+      }
+    }
+  }
+}
