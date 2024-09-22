@@ -81,6 +81,7 @@ public class EnchantmentScreenHandlerMixin {
         if (possibleEnchantments.isEmpty()) {
             return list;
         }
+        System.out.println("List 1: " + list.stream().map(e -> e.enchantment).toList());
 
         for (int i = 0; i < this.bookAmount; i++) {
             if (this.random.nextFloat() >= getProbability(i)) continue;
@@ -92,6 +93,7 @@ public class EnchantmentScreenHandlerMixin {
                         ));
 
             List<EnchantmentLevelEntry> entries = EnchantmentHelper.generateEnchantments(this.random, stack, level / (int) Math.pow(2, list.size() - 1), possibleEnchantments.stream().map(e -> e.enchantment));
+            if (entries.isEmpty()) return list;
             entries = entries.stream().map(e -> {
                 for (int j = maxLevelEnchantments.get(e.enchantment).level; j >= Math.min(e.enchantment.value().getMinLevel(), maxLevelEnchantments.get(e.enchantment).level); --j) {
                     if (level < 1 + 11 * (j - 1) || level > 21 + 11 * (j - 1)) continue;
@@ -103,15 +105,18 @@ public class EnchantmentScreenHandlerMixin {
                 if (!list.isEmpty()) list.remove(this.random.nextInt(list.size())); // this is separate so you can get a book with only the desired enchantment even with substituteEnchantmentChance being equal to 0
                 if (entries.size() > 1) entries.remove(this.random.nextInt(entries.size()));
             }
+            System.out.println("List 2: " + list.stream().map(e -> e.enchantment).toList());
             if (this.random.nextFloat() < ChiseledEnchanting.CONFIG.subtituteEnchantmentChance()) {
                 for (int j = 0; j < entries.size(); j++) {
                     if (list.isEmpty()) break;
                     list.remove(this.random.nextInt(list.size()));
                 }
             }
+            System.out.println("List 3: " + list.stream().map(e -> e.enchantment).toList());
             list.addAll(entries);
             break;
         }
+        System.out.println("List 4: " + list.stream().map(e -> e.enchantment).toList());
         return list;
     }
 
