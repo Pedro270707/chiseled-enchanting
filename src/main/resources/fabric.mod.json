@@ -7,7 +7,9 @@
   "authors": [
     "Pedro Ricardo"
   ],
-  "contact": {},
+  "contact": {
+    "website": "https://pedroricardo.net"
+  },
   "license": "MIT",
   "icon": "assets/chiseledenchanting/icon.png",
   "environment": "*",
