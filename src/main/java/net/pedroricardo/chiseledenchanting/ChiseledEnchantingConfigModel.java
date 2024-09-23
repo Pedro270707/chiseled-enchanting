@@ -8,7 +8,9 @@ import io.wispforest.owo.config.annotation.RangeConstraint;
 public class ChiseledEnchantingConfigModel {
     public boolean allowBookEnchanting = true;
     public ProbabilityType probabilityType = ProbabilityType.EXPONENTIAL;
+    @RangeConstraint(min = 0.0, max = 1.0)
     public float firstBookProbability = 1.0f / 4.0f;
+    @RangeConstraint(min = 0.0, max = 1.0)
     public float tenthBookProbability = 1.0f / 100.0f;
     @RangeConstraint(min = 0.0, max = 6.0)
     public int booksNecessaryForPower = 0;
