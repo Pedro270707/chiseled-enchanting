@@ -1,41 +1,33 @@
 package net.pedroricardo.chiseledenchanting;
 
+import com.mojang.datafixers.util.Function3;
 import io.wispforest.owo.config.annotation.Config;
 import io.wispforest.owo.config.annotation.RangeConstraint;
-
-import java.util.function.Function;
 
 @Config(name = "chiseledenchanting", wrapperName = "ChiseledEnchantingConfig")
 public class ChiseledEnchantingConfigModel {
     public boolean allowBookEnchanting = true;
-    public ProbabilityType probabilityType = ProbabilityType.EXPONENTIAL_INCREASE;
+    public ProbabilityType probabilityType = ProbabilityType.EXPONENTIAL;
+    public float firstBookProbability = 1.0f / 4.0f;
+    public float tenthBookProbability = 1.0f / 100.0f;
     @RangeConstraint(min = 0.0, max = 6.0)
     public int booksNecessaryForPower = 0;
     @RangeConstraint(min = 0.0, max = 1.0)
-    public float subtituteEnchantmentChance = 0.0f;
+    public float substituteEnchantmentChance = 0.0f;
 
     public enum ProbabilityType {
-        LINEAR_INCREASE(i -> Math.min(0.05f + (0.95f * (i / 150f)), 1.0f)),
-        LINEAR_DECREASE(i -> Math.max(1.0f - (0.95f * (i / 150f)), 0.05f)),
-        EXPONENTIAL_INCREASE(i -> 0.05f + 0.95f * (1.0f - (float) Math.pow(Math.E, -0.0005 * i))),
-        EXPONENTIAL_DECREASE(i -> Math.max(0.05f + (0.95f * (float) Math.pow(Math.E, -0.0005 * i)), 0.05f)),
-        QUADRATIC_INCREASE(i -> {
-            float normalized = i / 150f;
-            return Math.min(0.05f + 0.95f * normalized * normalized, 1.0f);
-        }),
-        QUADRATIC_DECREASE(i -> {
-            float normalized = i / 150f;
-            return Math.max(1.0f - 0.95f * normalized * normalized, 0.05f);
-        });
+        LINEAR((zero, ten, i) -> zero + (ten - zero) * (i / 10.0f)),
+        EXPONENTIAL((zero, ten, i) -> zero * (float) Math.pow(ten / zero, i / 10.0f)),
+        QUADRATIC((zero, ten, i) -> zero + (ten - zero) * (float) Math.pow(i / 10.0f, 2));
 
-        private Function<Integer, Float> function;
+        private Function3<Float, Float, Integer, Float> function;
 
-        ProbabilityType(Function<Integer, Float> function) {
+        ProbabilityType(Function3<Float, Float, Integer, Float> function) {
             this.function = function;
         }
 
-        public float getProbability(int index) {
-            return this.function.apply(index);
+        public float getProbability(float zero, float ten, int index) {
+            return Math.min(this.function.apply(zero, ten, index), 1.0f);
         }
     }
 }

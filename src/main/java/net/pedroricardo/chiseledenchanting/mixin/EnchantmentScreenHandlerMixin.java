@@ -81,7 +81,6 @@ public class EnchantmentScreenHandlerMixin {
         if (possibleEnchantments.isEmpty()) {
             return list;
         }
-        System.out.println("List 1: " + list.stream().map(e -> e.enchantment).toList());
 
         for (int i = 0; i < this.bookAmount; i++) {
             if (this.random.nextFloat() >= getProbability(i)) continue;
@@ -102,26 +101,23 @@ public class EnchantmentScreenHandlerMixin {
                 return new EnchantmentLevelEntry(e.enchantment, e.enchantment.value().getMinLevel());
             }).collect(Collectors.toCollection(ArrayList::new));
             if (stack.isOf(Items.BOOK)) {
-                if (!list.isEmpty()) list.remove(this.random.nextInt(list.size())); // this is separate so you can get a book with only the desired enchantment even with substituteEnchantmentChance being equal to 0
+                if (!list.isEmpty()) list.remove(this.random.nextInt(list.size())); // this is separate, so you can get a book with only the desired enchantment even with substituteEnchantmentChance being equal to 0
                 if (entries.size() > 1) entries.remove(this.random.nextInt(entries.size()));
             }
-            System.out.println("List 2: " + list.stream().map(e -> e.enchantment).toList());
-            if (this.random.nextFloat() < ChiseledEnchanting.CONFIG.subtituteEnchantmentChance()) {
+            if (this.random.nextFloat() < ChiseledEnchanting.CONFIG.substituteEnchantmentChance()) {
                 for (int j = 0; j < entries.size(); j++) {
                     if (list.isEmpty()) break;
                     list.remove(this.random.nextInt(list.size()));
                 }
             }
-            System.out.println("List 3: " + list.stream().map(e -> e.enchantment).toList());
             list.addAll(entries);
             break;
         }
-        System.out.println("List 4: " + list.stream().map(e -> e.enchantment).toList());
         return list;
     }
 
     @Unique
     private float getProbability(int index) {
-        return ChiseledEnchanting.CONFIG.probabilityType().getProbability(index);
+        return ChiseledEnchanting.CONFIG.probabilityType().getProbability(ChiseledEnchanting.CONFIG.firstBookProbability(), ChiseledEnchanting.CONFIG.tenthBookProbability(), index);
     }
 }
