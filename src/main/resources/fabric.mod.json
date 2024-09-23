@@ -17,11 +17,7 @@
     ]
   },
   "mixins": [
-    "chiseledenchanting.mixins.json",
-    {
-      "config": "chiseledenchanting.client.mixins.json",
-      "environment": "client"
-    }
+    "chiseledenchanting.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",

@@ -10,17 +10,6 @@ base {
     archivesName = project.archives_base_name
 }
 
-loom {
-    splitEnvironmentSourceSets()
-
-    mods {
-        "chiseledenchanting" {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.client
-        }
-    }
-}
-
 repositories {
     maven { url 'https://maven.wispforest.io/releases/' }
 }
