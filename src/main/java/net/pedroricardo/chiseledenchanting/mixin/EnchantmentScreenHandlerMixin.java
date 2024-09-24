@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.block.EnchantingTableBlock;
 import net.minecraft.block.entity.ChiseledBookshelfBlockEntity;
 import net.minecraft.enchantment.Enchantment;
@@ -14,13 +13,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.EnchantmentScreenHandler;
-import net.minecraft.util.Util;
-import net.minecraft.util.collection.Weighting;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.pedroricardo.chiseledenchanting.ChiseledEnchanting;
+import net.pedroricardo.chiseledenchanting.ChiseledEnchantingTags;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,7 +37,7 @@ import java.util.stream.Collectors;
 public class EnchantmentScreenHandlerMixin {
     @Shadow @Final private Random random;
     @Unique
-    private List<EnchantmentLevelEntry> possibleEnchantments = new ArrayList<>();
+    private final List<EnchantmentLevelEntry> possibleEnchantments = new ArrayList<>();
     @Unique
     private int bookAmount = 0;
 
@@ -55,8 +52,13 @@ public class EnchantmentScreenHandlerMixin {
             for (int i = 0; i < bookshelf.size(); i++) {
                 if (bookshelf.getStack(i).isOf(Items.ENCHANTED_BOOK)) {
                     ++this.bookAmount;
-                    Set<Object2IntMap.Entry<RegistryEntry<Enchantment>>> enchantmentEntries = EnchantmentHelper.getEnchantments(bookshelf.getStack(i)).getEnchantmentEntries();
-                    this.possibleEnchantments.addAll(enchantmentEntries.stream().map(entry -> new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue())).collect(Collectors.toSet()));
+                    Set<EnchantmentLevelEntry> possibleEnchantments = EnchantmentHelper.getEnchantments(bookshelf.getStack(i))
+                            .getEnchantmentEntries()
+                            .stream()
+                            .map(entry -> new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()))
+                            .collect(Collectors.toSet());
+                    possibleEnchantments.removeIf(entry -> entry.enchantment.isIn(ChiseledEnchantingTags.NOT_OBTAINABLE_FROM_CHISELED_BOOKSHELF));
+                    this.possibleEnchantments.addAll(possibleEnchantments);
                 }
             }
         }
