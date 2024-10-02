@@ -1,5 +1,6 @@
 package net.pedroricardo.chiseledenchanting.mixin;
 
+import com.google.common.collect.Lists;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -11,9 +12,12 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.Registries;
 import net.minecraft.screen.EnchantmentScreenHandler;
+import net.minecraft.util.Util;
+import net.minecraft.util.collection.Weighting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.pedroricardo.chiseledenchanting.ChiseledEnchanting;
@@ -26,12 +30,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Mixin(EnchantmentScreenHandler.class)
 public class EnchantmentScreenHandlerMixin {
@@ -93,7 +95,7 @@ public class EnchantmentScreenHandlerMixin {
                                 (entry1, entry2) -> entry1.level > entry2.level ? entry1 : entry2
                         ));
 
-            List<EnchantmentLevelEntry> entries = EnchantmentHelper.generateEnchantments(this.random, stack, level / (int) Math.pow(2, list.size() - 1), possibleEnchantments.stream().map(e -> e.enchantment));
+            List<EnchantmentLevelEntry> entries = generateEnchantments(this.random, stack, level / (int) Math.pow(2, list.size() - 1), possibleEnchantments.stream().map(e -> e.enchantment));
             if (entries.isEmpty()) return list;
             entries = entries.stream().map(e -> {
                 for (int j = maxLevelEnchantments.get(e.enchantment).level; j >= Math.min(e.enchantment.value().getMinLevel(), maxLevelEnchantments.get(e.enchantment).level); --j) {
@@ -121,5 +123,59 @@ public class EnchantmentScreenHandlerMixin {
     @Unique
     private float getProbability(int index) {
         return ChiseledEnchanting.CONFIG.probabilityType().getProbability(ChiseledEnchanting.CONFIG.firstBookProbability(), ChiseledEnchanting.CONFIG.tenthBookProbability(), index);
+    }
+
+    @Unique
+    private static List<EnchantmentLevelEntry> generateEnchantments(Random random, ItemStack stack, int level, Stream<Enchantment> possibleEnchantments) {
+        List<EnchantmentLevelEntry> list = Lists.newArrayList();
+        Item item = stack.getItem();
+        int i = item.getEnchantability();
+        if (i > 0) {
+            level += 1 + random.nextInt(i / 4 + 1) + random.nextInt(i / 4 + 1);
+            float f = (random.nextFloat() + random.nextFloat() - 1.0F) * 0.15F;
+            level = MathHelper.clamp(Math.round((float) level + (float) level * f), 1, Integer.MAX_VALUE);
+            List<EnchantmentLevelEntry> list2 = getPossibleEntries(level, possibleEnchantments);
+            if (!list2.isEmpty()) {
+                Optional<EnchantmentLevelEntry> var10000 = Weighting.getRandom(random, list2);
+                Objects.requireNonNull(list);
+                var10000.ifPresent(list::add);
+
+                while (random.nextInt(50) <= level) {
+                    if (!list.isEmpty()) {
+                        removeConflicts(list2, Util.getLast(list));
+                    }
+
+                    if (list2.isEmpty()) {
+                        break;
+                    }
+
+                    var10000 = Weighting.getRandom(random, list2);
+                    Objects.requireNonNull(list);
+                    var10000.ifPresent(list::add);
+                    level /= 2;
+                }
+            }
+
+        }
+        return list;
+    }
+
+    @Unique
+    private static void removeConflicts(List<EnchantmentLevelEntry> possibleEntries, EnchantmentLevelEntry pickedEntry) {
+        possibleEntries.removeIf(enchantmentLevelEntry -> !pickedEntry.enchantment.canCombine(enchantmentLevelEntry.enchantment));
+    }
+
+    @Unique
+    private static List<EnchantmentLevelEntry> getPossibleEntries(int level, Stream<Enchantment> possibleEnchantments) {
+        List<EnchantmentLevelEntry> list = Lists.newArrayList();
+        possibleEnchantments.forEach((enchantmentx) -> {
+            for(int j = enchantmentx.getMaxLevel(); j >= enchantmentx.getMinLevel(); --j) {
+                if (level >= 1 + 11 * (j - 1) && level <= 21 + 11 * (j - 1)) {
+                    list.add(new EnchantmentLevelEntry(enchantmentx, j));
+                    break;
+                }
+            }
+        });
+        return list;
     }
 }
