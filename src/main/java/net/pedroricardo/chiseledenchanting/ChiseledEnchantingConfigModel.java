@@ -12,6 +12,7 @@ public class ChiseledEnchantingConfigModel {
     public float firstBookProbability = 1.0f / 4.0f;
     @RangeConstraint(min = 0.0, max = 1.0)
     public float tenthBookProbability = 1.0f / 100.0f;
+    public boolean chiseledBookshelvesProvidePower = false;
     @RangeConstraint(min = 0.0, max = 6.0)
     public int booksNecessaryForPower = 0;
     @RangeConstraint(min = 0.0, max = 1.0)

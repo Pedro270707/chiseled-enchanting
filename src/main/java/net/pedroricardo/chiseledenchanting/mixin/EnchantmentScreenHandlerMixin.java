@@ -49,7 +49,7 @@ public class EnchantmentScreenHandlerMixin {
     private void chiseledenchanting$getEnchantments(ItemStack itemStack, World world, BlockPos tablePos, CallbackInfo ci) {
         this.possibleEnchantments.clear();
         this.bookAmount = 0;
-        for (BlockPos blockPos : EnchantingTableBlock.POWER_PROVIDER_OFFSETS) {
+        for (BlockPos blockPos : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
             if (!(world.getBlockEntity(tablePos.add(blockPos)) instanceof ChiseledBookshelfBlockEntity bookshelf)) {
                 continue;
             }
@@ -68,16 +68,18 @@ public class EnchantmentScreenHandlerMixin {
         }
     }
 
-    @WrapOperation(method = "method_17411", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/EnchantingTableBlock;canAccessPowerProvider(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z"))
+    @WrapOperation(method = "method_17411", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/EnchantingTableBlock;canAccessBookshelf(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean chiseledenchanting$chiseledBookshelfProvidesPower(World world, BlockPos tablePos, BlockPos providerOffset, Operation<Boolean> original) {
-        if (!original.call(world, tablePos, providerOffset)) return false;
-        if (!(world.getBlockEntity(providerOffset) instanceof ChiseledBookshelfBlockEntity bookshelf)) return true;
+        if (!(world.getBlockEntity(tablePos.add(providerOffset)) instanceof ChiseledBookshelfBlockEntity bookshelf)) return original.call(world, tablePos, providerOffset);
+        if (!ChiseledEnchanting.CONFIG.chiseledBookshelvesProvidePower()) return false;
+        if (!world.isAir(tablePos.add(providerOffset.getX() / 2, providerOffset.getY(), providerOffset.getZ() / 2))) return false;
 
         int bookCount = 0;
         for (int i = 0; i < bookshelf.size(); ++i) {
             ItemStack itemStack = bookshelf.getStack(i);
             if (!itemStack.isEmpty()) ++bookCount;
         }
+        System.out.println(bookCount + " >= " + ChiseledEnchanting.CONFIG.booksNecessaryForPower());
         return bookCount >= ChiseledEnchanting.CONFIG.booksNecessaryForPower();
     }
 
