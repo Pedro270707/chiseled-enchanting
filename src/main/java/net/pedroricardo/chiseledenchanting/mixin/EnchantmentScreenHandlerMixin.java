@@ -79,7 +79,6 @@ public class EnchantmentScreenHandlerMixin {
             ItemStack itemStack = bookshelf.getStack(i);
             if (!itemStack.isEmpty()) ++bookCount;
         }
-        System.out.println(bookCount + " >= " + ChiseledEnchanting.CONFIG.booksNecessaryForPower());
         return bookCount >= ChiseledEnchanting.CONFIG.booksNecessaryForPower();
     }
 
