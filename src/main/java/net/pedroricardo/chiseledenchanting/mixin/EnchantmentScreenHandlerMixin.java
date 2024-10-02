@@ -56,10 +56,10 @@ public class EnchantmentScreenHandlerMixin {
             for (int i = 0; i < bookshelf.size(); i++) {
                 if (bookshelf.getStack(i).isOf(Items.ENCHANTED_BOOK)) {
                     ++this.bookAmount;
-                    Set<EnchantmentLevelEntry> possibleEnchantments = EnchantmentHelper.fromNbt(EnchantedBookItem.getEnchantmentNbt(bookshelf.getStack(i)))
-                            .entrySet()
+                    Set<EnchantmentLevelEntry> possibleEnchantments = EnchantmentHelper.getEnchantments(bookshelf.getStack(i))
+                            .getEnchantmentsMap()
                             .stream()
-                            .map(entry -> new EnchantmentLevelEntry(entry.getKey(), entry.getValue()))
+                            .map(entry -> new EnchantmentLevelEntry(entry.getKey().value(), entry.getIntValue()))
                             .collect(Collectors.toSet());
                     possibleEnchantments.removeIf(entry -> Registries.ENCHANTMENT.getEntry(entry.enchantment).isIn(ChiseledEnchantingTags.NOT_OBTAINABLE_FROM_CHISELED_BOOKSHELF));
                     this.possibleEnchantments.addAll(possibleEnchantments);
@@ -83,7 +83,7 @@ public class EnchantmentScreenHandlerMixin {
 
     @ModifyReturnValue(method = "generateEnchantments", at = @At("RETURN"))
     private List<EnchantmentLevelEntry> chiseledenchanting$addEnchantments(List<EnchantmentLevelEntry> list, @Local(ordinal = 0, argsOnly = true) ItemStack stack, @Local(ordinal = 1, argsOnly = true) int level) {
-        List<EnchantmentLevelEntry> possibleEnchantments = this.possibleEnchantments.stream().filter(e -> !list.contains(e) && (e.enchantment.isAcceptableItem(stack) || (stack.isOf(Items.BOOK) && ChiseledEnchanting.CONFIG.allowBookEnchanting())) && EnchantmentHelper.isCompatible(EnchantmentHelper.fromNbt(stack.getEnchantments()).keySet(), e.enchantment)).toList();
+        List<EnchantmentLevelEntry> possibleEnchantments = this.possibleEnchantments.stream().filter(e -> !list.contains(e) && (e.enchantment.isAcceptableItem(stack) || (stack.isOf(Items.BOOK) && ChiseledEnchanting.CONFIG.allowBookEnchanting())) && EnchantmentHelper.isCompatible(EnchantmentHelper.getEnchantments(stack).getEnchantments(), e.enchantment)).toList();
         if (possibleEnchantments.isEmpty()) {
             return list;
         }
