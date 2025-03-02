@@ -119,6 +119,8 @@ public class EnchantmentScreenHandlerMixin {
                     list.remove(this.random.nextInt(list.size()));
                 }
             }
+            List<EnchantmentLevelEntry> finalEntries = entries;
+            list.removeIf(entry -> finalEntries.stream().anyMatch(entry1 -> entry1.enchantment == entry.enchantment));
             list.addAll(entries);
             break;
         }
@@ -132,55 +134,39 @@ public class EnchantmentScreenHandlerMixin {
 
     @Unique
     private static List<EnchantmentLevelEntry> generateEnchantments(Random random, ItemStack stack, int level, Stream<Enchantment> possibleEnchantments) {
-        List<EnchantmentLevelEntry> list = Lists.newArrayList();
+        ArrayList<EnchantmentLevelEntry> list = Lists.newArrayList();
         Item item = stack.getItem();
         int i = item.getEnchantability();
-        if (i > 0) {
-            level += 1 + random.nextInt(i / 4 + 1) + random.nextInt(i / 4 + 1);
-            float f = (random.nextFloat() + random.nextFloat() - 1.0F) * 0.15F;
-            level = MathHelper.clamp(Math.round((float) level + (float) level * f), 1, Integer.MAX_VALUE);
-            List<EnchantmentLevelEntry> list2 = getPossibleEntries(level, possibleEnchantments);
-            if (!list2.isEmpty()) {
-                Optional<EnchantmentLevelEntry> var10000 = Weighting.getRandom(random, list2);
-                Objects.requireNonNull(list);
-                var10000.ifPresent(list::add);
-
-                while (random.nextInt(50) <= level) {
-                    if (!list.isEmpty()) {
-                        removeConflicts(list2, Util.getLast(list));
-                    }
-
-                    if (list2.isEmpty()) {
-                        break;
-                    }
-
-                    var10000 = Weighting.getRandom(random, list2);
-                    Objects.requireNonNull(list);
-                    var10000.ifPresent(list::add);
-                    level /= 2;
+        if (i <= 0) {
+            return list;
+        }
+        level += 1 + random.nextInt(i / 4 + 1) + random.nextInt(i / 4 + 1);
+        float f = (random.nextFloat() + random.nextFloat() - 1.0f) * 0.15f;
+        List<EnchantmentLevelEntry> list2 = getPossibleEntries(level = MathHelper.clamp(Math.round((float)level + (float)level * f), 1, Integer.MAX_VALUE), possibleEnchantments);
+        if (!list2.isEmpty()) {
+            Weighting.getRandom(random, list2).ifPresent(list::add);
+            while (random.nextInt(50) <= level) {
+                if (!list.isEmpty()) {
+                    EnchantmentHelper.removeConflicts(list2, Util.getLast(list));
                 }
+                if (list2.isEmpty()) break;
+                Weighting.getRandom(random, list2).ifPresent(list::add);
+                level /= 2;
             }
-
         }
         return list;
     }
 
     @Unique
-    private static void removeConflicts(List<EnchantmentLevelEntry> possibleEntries, EnchantmentLevelEntry pickedEntry) {
-        possibleEntries.removeIf(enchantmentLevelEntry -> !pickedEntry.enchantment.canCombine(enchantmentLevelEntry.enchantment));
-    }
-
-    @Unique
     private static List<EnchantmentLevelEntry> getPossibleEntries(int level, Stream<Enchantment> possibleEnchantments) {
-        List<EnchantmentLevelEntry> list = Lists.newArrayList();
-        possibleEnchantments.forEach((enchantmentx) -> {
-            for(int j = enchantmentx.getMaxLevel(); j >= enchantmentx.getMinLevel(); --j) {
-                if (level >= 1 + 11 * (j - 1) && level <= 21 + 11 * (j - 1)) {
-                    list.add(new EnchantmentLevelEntry(enchantmentx, j));
-                    break;
-                }
+        ArrayList<EnchantmentLevelEntry> list = Lists.newArrayList();
+        for (Enchantment enchantment : possibleEnchantments.collect(Collectors.toSet())) {
+            for (int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
+                if (level < enchantment.getMinPower(i) || level > enchantment.getMaxPower(i)) continue;
+                list.add(new EnchantmentLevelEntry(enchantment, i));
+                break;
             }
-        });
+        }
         return list;
     }
 }
