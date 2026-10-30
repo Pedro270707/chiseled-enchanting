@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom-remap' version '1.15-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -12,6 +12,17 @@ base {
 
 repositories {
     maven { url 'https://maven.wispforest.io/releases/' }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'jitpack'
+                url = 'https://jitpack.io/'
+            }
+        }
+        filter {
+            includeGroup 'com.github.kdl-org'
+        }
+    }
 }
 
 dependencies {

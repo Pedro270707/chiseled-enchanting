@@ -57,7 +57,7 @@ public class EnchantmentScreenHandlerMixin {
                             .stream()
                             .map(entry -> new EnchantmentLevelEntry(entry.getKey(), entry.getIntValue()))
                             .collect(Collectors.toSet());
-                    possibleEnchantments.removeIf(entry -> entry.enchantment.isIn(ChiseledEnchantingTags.NOT_OBTAINABLE_FROM_CHISELED_BOOKSHELF));
+                    possibleEnchantments.removeIf(entry -> entry.enchantment().isIn(ChiseledEnchantingTags.NOT_OBTAINABLE_FROM_CHISELED_BOOKSHELF));
                     this.possibleEnchantments.addAll(possibleEnchantments);
                 }
             }
@@ -79,7 +79,7 @@ public class EnchantmentScreenHandlerMixin {
 
     @ModifyReturnValue(method = "generateEnchantments", at = @At("RETURN"))
     private List<EnchantmentLevelEntry> chiseledenchanting$addEnchantments(List<EnchantmentLevelEntry> list, @Local(ordinal = 0, argsOnly = true) ItemStack stack, @Local(ordinal = 1, argsOnly = true) int level) {
-        List<EnchantmentLevelEntry> possibleEnchantments = this.possibleEnchantments.stream().filter(e -> !list.contains(e) && (e.enchantment.value().isAcceptableItem(stack) || (stack.isOf(Items.BOOK) && ChiseledEnchanting.CONFIG.allowBookEnchanting())) && EnchantmentHelper.isCompatible(EnchantmentHelper.getEnchantments(stack).getEnchantments(), e.enchantment)).toList();
+        List<EnchantmentLevelEntry> possibleEnchantments = this.possibleEnchantments.stream().filter(e -> !list.contains(e) && (e.enchantment().value().isAcceptableItem(stack) || (stack.isOf(Items.BOOK) && ChiseledEnchanting.CONFIG.allowBookEnchanting())) && EnchantmentHelper.isCompatible(EnchantmentHelper.getEnchantments(stack).getEnchantments(), e.enchantment())).toList();
         if (possibleEnchantments.isEmpty()) {
             return list;
         }
@@ -88,19 +88,19 @@ public class EnchantmentScreenHandlerMixin {
             if (this.random.nextFloat() >= getProbability(i)) continue;
             Map<RegistryEntry<Enchantment>, EnchantmentLevelEntry> maxLevelEnchantments = possibleEnchantments.stream()
                         .collect(Collectors.toMap(
-                                e -> e.enchantment,
+                                EnchantmentLevelEntry::enchantment,
                                 Function.identity(),
-                                (entry1, entry2) -> entry1.level > entry2.level ? entry1 : entry2
+                                (entry1, entry2) -> entry1.level() > entry2.level() ? entry1 : entry2
                         ));
 
-            List<EnchantmentLevelEntry> entries = EnchantmentHelper.generateEnchantments(this.random, stack, level / (int) Math.pow(2, list.size() - 1), possibleEnchantments.stream().map(e -> e.enchantment));
+            List<EnchantmentLevelEntry> entries = EnchantmentHelper.generateEnchantments(this.random, stack, level / (int) Math.pow(2, list.size() - 1), possibleEnchantments.stream().map(EnchantmentLevelEntry::enchantment));
             if (entries.isEmpty()) return list;
             entries = entries.stream().map(e -> {
-                for (int j = maxLevelEnchantments.get(e.enchantment).level; j >= Math.min(e.enchantment.value().getMinLevel(), maxLevelEnchantments.get(e.enchantment).level); --j) {
+                for (int j = maxLevelEnchantments.get(e.enchantment()).level(); j >= Math.min(e.enchantment().value().getMinLevel(), maxLevelEnchantments.get(e.enchantment()).level()); --j) {
                     if (level < 1 + 11 * (j - 1) || level > 21 + 11 * (j - 1)) continue;
-                    return new EnchantmentLevelEntry(e.enchantment, j);
+                    return new EnchantmentLevelEntry(e.enchantment(), j);
                 }
-                return new EnchantmentLevelEntry(e.enchantment, e.enchantment.value().getMinLevel());
+                return new EnchantmentLevelEntry(e.enchantment(), e.enchantment().value().getMinLevel());
             }).collect(Collectors.toCollection(ArrayList::new));
             if (stack.isOf(Items.BOOK)) {
                 if (!list.isEmpty()) list.remove(this.random.nextInt(list.size())); // this is separate, so you can get a book with only the desired enchantment even with substituteEnchantmentChance being equal to 0
