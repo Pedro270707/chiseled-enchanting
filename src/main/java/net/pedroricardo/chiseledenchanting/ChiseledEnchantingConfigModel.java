@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Function3;
 import io.wispforest.owo.config.annotation.Config;
 import io.wispforest.owo.config.annotation.RangeConstraint;
 
+@SuppressWarnings("unused")
 @Config(name = "chiseledenchanting", wrapperName = "ChiseledEnchantingConfig")
 public class ChiseledEnchantingConfigModel {
     public boolean allowBookEnchanting = true;
@@ -22,7 +23,7 @@ public class ChiseledEnchantingConfigModel {
         EXPONENTIAL((zero, ten, i) -> zero * (float) Math.pow(ten / zero, i / 10.0f)),
         QUADRATIC((zero, ten, i) -> zero + (ten - zero) * (float) Math.pow(i / 10.0f, 2));
 
-        private Function3<Float, Float, Integer, Float> function;
+        private final Function3<Float, Float, Integer, Float> function;
 
         ProbabilityType(Function3<Float, Float, Integer, Float> function) {
             this.function = function;
